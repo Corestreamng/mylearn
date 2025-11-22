@@ -1,0 +1,38 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Prevent access to hidden files and directories
+    <FilesMatch "^\.">
+        Require all denied
+    </FilesMatch>
+    
+    # Protect config directory
+    RewriteRule ^config/ - [F,L]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# Set upload size limits
+php_value upload_max_filesize 50M
+php_value post_max_size 50M
+php_value max_execution_time 300
+php_value max_input_time 300
+
+# Error handling
+php_flag display_errors Off
+php_flag log_errors On
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "\.(sql|log|md|gitignore)$">
+    Require all denied
+</FilesMatch>
