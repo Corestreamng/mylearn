@@ -106,6 +106,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <button type="submit" class="btn btn-primary w-100">Login</button>
                         </form>
                         
+                        <div class="mt-3 text-center">
+                            <a href="/register.php">Don't have an account? Register as Parent</a>
+                        </div>
+                        
                         <div class="mt-4 text-center text-muted">
                             <small>Default Admin Login: admin@mylearn.com / admin123</small>
                         </div>
