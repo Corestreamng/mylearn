@@ -60,7 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
     }
     
-    if (!isset($message) || empty($message)) {
+    // Only insert if no error occurred during file upload
+    if (empty($message)) {
         $stmt = $conn->prepare("INSERT INTO learning_materials (subject_id, title, description, material_type, file_path, content, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("isssssi", $subject_id, $title, $description, $material_type, $file_path, $content, $_SESSION['user_id']);
         

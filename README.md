@@ -123,11 +123,17 @@ mylearn/
 
 ## Security Features
 
-- Password hashing using PHP's `password_hash()`
-- SQL injection protection using prepared statements
-- Input sanitization
-- Session-based authentication
-- Role-based access control
+- **Password Hashing**: Uses PHP's `password_hash()` with bcrypt algorithm
+- **SQL Injection Protection**: All queries use prepared statements with parameter binding
+- **XSS Protection**: Input sanitization with `htmlspecialchars()` with ENT_QUOTES and UTF-8 encoding
+- **Session Security**: Session regeneration to prevent session fixation attacks
+- **CSRF Protection**: Helper functions for token generation and verification
+- **File Upload Security**: 
+  - Type validation with allowed extension whitelist
+  - Size limits (50MB maximum)
+  - Unique filename generation to prevent overwrites
+- **Integer Validation**: For dynamic IN clauses, IDs are cast with `array_map('intval')` to ensure integer-only values
+- **Security Headers**: X-Frame-Options, X-XSS-Protection, and Content-Type-Options via .htaccess
 
 ## Subscription Pricing
 
