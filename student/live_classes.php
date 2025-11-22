@@ -6,18 +6,22 @@ $conn = getDBConnection();
 
 // Get student's subscribed subjects
 $subscribed_subjects = [];
-$result = $conn->query("SELECT DISTINCT subj.subject_id
+$stmt = $conn->prepare("SELECT DISTINCT subj.subject_id
     FROM subscriptions sub
     JOIN subjects subj ON sub.subject_id = subj.subject_id
-    WHERE sub.student_id = {$_SESSION['user_id']} AND sub.status = 'active'");
+    WHERE sub.student_id = ? AND sub.status = 'active'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $subscribed_subjects[] = $row['subject_id'];
 }
+$stmt->close();
 
 // Get live classes for subscribed subjects
 $live_classes = [];
 if (!empty($subscribed_subjects)) {
-    $subject_ids = implode(',', $subscribed_subjects);
+    $subject_ids = implode(',', array_map('intval', $subscribed_subjects));
     
     $result = $conn->query("SELECT lc.*, s.subject_name, u.full_name as teacher_name
         FROM live_classes lc

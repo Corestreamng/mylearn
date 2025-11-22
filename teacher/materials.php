@@ -67,20 +67,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Get teacher's subjects
 $subjects = [];
-$result = $conn->query("SELECT * FROM subjects WHERE teacher_id = {$_SESSION['user_id']} AND status = 'active'");
+$stmt = $conn->prepare("SELECT * FROM subjects WHERE teacher_id = ? AND status = 'active'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $subjects[] = $row;
 }
+$stmt->close();
 
 // Get teacher's materials
 $materials = [];
-$result = $conn->query("SELECT lm.*, s.subject_name FROM learning_materials lm 
+$stmt = $conn->prepare("SELECT lm.*, s.subject_name FROM learning_materials lm 
     JOIN subjects s ON lm.subject_id = s.subject_id 
-    WHERE lm.uploaded_by = {$_SESSION['user_id']} 
+    WHERE lm.uploaded_by = ? 
     ORDER BY lm.uploaded_at DESC");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $materials[] = $row;
 }
+$stmt->close();
 
 $conn->close();
 ?>

@@ -6,19 +6,23 @@ $conn = getDBConnection();
 
 // Get student's subscribed subjects
 $subscribed_subjects = [];
-$result = $conn->query("SELECT DISTINCT subj.subject_id, subj.subject_name
+$stmt = $conn->prepare("SELECT DISTINCT subj.subject_id, subj.subject_name
     FROM subscriptions sub
     JOIN subjects subj ON sub.subject_id = subj.subject_id
-    WHERE sub.student_id = {$_SESSION['user_id']} AND sub.status = 'active'");
+    WHERE sub.student_id = ? AND sub.status = 'active'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $subscribed_subjects[] = $row;
 }
+$stmt->close();
 
 // Get materials for subscribed subjects
 $materials = [];
 if (!empty($subscribed_subjects)) {
     $subject_ids = array_column($subscribed_subjects, 'subject_id');
-    $ids_string = implode(',', $subject_ids);
+    $ids_string = implode(',', array_map('intval', $subject_ids));
     
     // Filter by subject if provided
     $filter = '';

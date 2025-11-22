@@ -35,12 +35,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Get parent's children
 $children = [];
-$result = $conn->query("SELECT u.*, 
+$stmt = $conn->prepare("SELECT u.*, 
     (SELECT COUNT(*) FROM subscriptions WHERE student_id = u.user_id AND status = 'active') as active_subscriptions
-    FROM users u WHERE parent_id = {$_SESSION['user_id']} AND user_type = 'student'");
+    FROM users u WHERE parent_id = ? AND user_type = 'student'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $children[] = $row;
 }
+$stmt->close();
 
 $conn->close();
 ?>

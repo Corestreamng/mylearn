@@ -59,20 +59,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Get teacher's subjects
 $subjects = [];
-$result = $conn->query("SELECT * FROM subjects WHERE teacher_id = {$_SESSION['user_id']} AND status = 'active'");
+$stmt = $conn->prepare("SELECT * FROM subjects WHERE teacher_id = ? AND status = 'active'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $subjects[] = $row;
 }
+$stmt->close();
 
 // Get teacher's live classes
 $classes = [];
-$result = $conn->query("SELECT lc.*, s.subject_name FROM live_classes lc 
+$stmt = $conn->prepare("SELECT lc.*, s.subject_name FROM live_classes lc 
     JOIN subjects s ON lc.subject_id = s.subject_id 
-    WHERE lc.teacher_id = {$_SESSION['user_id']} 
+    WHERE lc.teacher_id = ? 
     ORDER BY lc.scheduled_at DESC");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $classes[] = $row;
 }
+$stmt->close();
 
 $conn->close();
 ?>

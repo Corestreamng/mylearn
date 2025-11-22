@@ -6,21 +6,25 @@ $conn = getDBConnection();
 
 // Get student's active subscriptions
 $subscriptions = [];
-$result = $conn->query("SELECT sub.*, subj.subject_name, u.full_name as teacher_name
+$stmt = $conn->prepare("SELECT sub.*, subj.subject_name, u.full_name as teacher_name
     FROM subscriptions sub
     JOIN subjects subj ON sub.subject_id = subj.subject_id
     LEFT JOIN users u ON subj.teacher_id = u.user_id
-    WHERE sub.student_id = {$_SESSION['user_id']} AND sub.status = 'active'
+    WHERE sub.student_id = ? AND sub.status = 'active'
     ORDER BY sub.end_date ASC");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $subscriptions[] = $row;
 }
+$stmt->close();
 
 // Get upcoming live classes for subscribed subjects
 $upcoming_classes = [];
 if (!empty($subscriptions)) {
     $subject_ids = array_column($subscriptions, 'subject_id');
-    $ids_string = implode(',', $subject_ids);
+    $ids_string = implode(',', array_map('intval', $subject_ids));
     
     $result = $conn->query("SELECT lc.*, s.subject_name, u.full_name as teacher_name
         FROM live_classes lc
@@ -39,7 +43,7 @@ if (!empty($subscriptions)) {
 $total_materials = 0;
 if (!empty($subscriptions)) {
     $subject_ids = array_column($subscriptions, 'subject_id');
-    $ids_string = implode(',', $subject_ids);
+    $ids_string = implode(',', array_map('intval', $subject_ids));
     
     $result = $conn->query("SELECT COUNT(*) as count FROM learning_materials WHERE subject_id IN ($ids_string) AND status = 'active'");
     $total_materials = $result->fetch_assoc()['count'];

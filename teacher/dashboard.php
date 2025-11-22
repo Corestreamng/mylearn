@@ -6,26 +6,38 @@ $conn = getDBConnection();
 
 // Get teacher's subjects
 $subjects = [];
-$result = $conn->query("SELECT * FROM subjects WHERE teacher_id = {$_SESSION['user_id']} AND status = 'active'");
+$stmt = $conn->prepare("SELECT * FROM subjects WHERE teacher_id = ? AND status = 'active'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $subjects[] = $row;
 }
+$stmt->close();
 
 // Get total materials uploaded
-$result = $conn->query("SELECT COUNT(*) as count FROM learning_materials WHERE uploaded_by = {$_SESSION['user_id']}");
+$stmt = $conn->prepare("SELECT COUNT(*) as count FROM learning_materials WHERE uploaded_by = ?");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 $total_materials = $result->fetch_assoc()['count'];
+$stmt->close();
 
 // Get upcoming live classes
 $upcoming_classes = [];
-$result = $conn->query("SELECT lc.*, s.subject_name FROM live_classes lc 
+$stmt = $conn->prepare("SELECT lc.*, s.subject_name FROM live_classes lc 
     JOIN subjects s ON lc.subject_id = s.subject_id 
-    WHERE lc.teacher_id = {$_SESSION['user_id']} 
+    WHERE lc.teacher_id = ? 
     AND lc.scheduled_at > NOW() 
     AND lc.status = 'scheduled'
     ORDER BY lc.scheduled_at ASC LIMIT 5");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $upcoming_classes[] = $row;
 }
+$stmt->close();
 
 $conn->close();
 ?>

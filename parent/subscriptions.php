@@ -6,7 +6,7 @@ $conn = getDBConnection();
 
 // Get all subscriptions
 $subscriptions = [];
-$result = $conn->query("SELECT sub.*, 
+$stmt = $conn->prepare("SELECT sub.*, 
     s.full_name as student_name,
     subj.subject_name,
     u.full_name as teacher_name
@@ -14,11 +14,15 @@ $result = $conn->query("SELECT sub.*,
     JOIN users s ON sub.student_id = s.user_id
     JOIN subjects subj ON sub.subject_id = subj.subject_id
     LEFT JOIN users u ON subj.teacher_id = u.user_id
-    WHERE sub.parent_id = {$_SESSION['user_id']}
+    WHERE sub.parent_id = ?
     ORDER BY sub.created_at DESC");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $subscriptions[] = $row;
 }
+$stmt->close();
 
 $conn->close();
 ?>

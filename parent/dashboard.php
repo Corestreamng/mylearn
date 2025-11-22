@@ -6,14 +6,22 @@ $conn = getDBConnection();
 
 // Get parent's children
 $children = [];
-$result = $conn->query("SELECT * FROM users WHERE parent_id = {$_SESSION['user_id']} AND user_type = 'student'");
+$stmt = $conn->prepare("SELECT * FROM users WHERE parent_id = ? AND user_type = 'student'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $children[] = $row;
 }
+$stmt->close();
 
 // Get total active subscriptions
-$result = $conn->query("SELECT COUNT(*) as count FROM subscriptions WHERE parent_id = {$_SESSION['user_id']} AND status = 'active'");
+$stmt = $conn->prepare("SELECT COUNT(*) as count FROM subscriptions WHERE parent_id = ? AND status = 'active'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 $active_subscriptions = $result->fetch_assoc()['count'];
+$stmt->close();
 
 // Get available subjects
 $result = $conn->query("SELECT COUNT(*) as count FROM subjects WHERE status = 'active'");
@@ -21,15 +29,19 @@ $available_subjects = $result->fetch_assoc()['count'];
 
 // Get recent subscriptions
 $recent_subscriptions = [];
-$result = $conn->query("SELECT sub.*, s.full_name as student_name, subj.subject_name 
+$stmt = $conn->prepare("SELECT sub.*, s.full_name as student_name, subj.subject_name 
     FROM subscriptions sub
     JOIN users s ON sub.student_id = s.user_id
     JOIN subjects subj ON sub.subject_id = subj.subject_id
-    WHERE sub.parent_id = {$_SESSION['user_id']}
+    WHERE sub.parent_id = ?
     ORDER BY sub.created_at DESC LIMIT 5");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $recent_subscriptions[] = $row;
 }
+$stmt->close();
 
 $conn->close();
 ?>
