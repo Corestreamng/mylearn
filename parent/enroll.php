@@ -29,10 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Get parent's children
 $children = [];
-$result = $conn->query("SELECT * FROM users WHERE parent_id = {$_SESSION['user_id']} AND user_type = 'student' AND status = 'active'");
+$stmt = $conn->prepare("SELECT * FROM users WHERE parent_id = ? AND user_type = 'student' AND status = 'active'");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
     $children[] = $row;
 }
+$stmt->close();
 
 // Get available subjects
 $subjects = [];

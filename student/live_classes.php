@@ -21,6 +21,7 @@ $stmt->close();
 // Get live classes for subscribed subjects
 $live_classes = [];
 if (!empty($subscribed_subjects)) {
+    // Safe: Each ID is explicitly cast to integer to prevent SQL injection
     $subject_ids = implode(',', array_map('intval', $subscribed_subjects));
     
     $result = $conn->query("SELECT lc.*, s.subject_name, u.full_name as teacher_name

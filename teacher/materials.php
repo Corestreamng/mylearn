@@ -18,35 +18,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if (isset($_FILES['file']) && $_FILES['file']['error'] === 0) {
         $upload_dir = __DIR__ . '/../assets/uploads/';
         $file_ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
-        $new_filename = uniqid() . '_' . time() . '.' . $file_ext;
+        $file_size = $_FILES['file']['size'];
+        $max_size = 50 * 1024 * 1024; // 50MB
         
-        // Determine subfolder based on type
-        $subfolder = '';
-        if (in_array($file_ext, ['mp4', 'avi', 'mov', 'webm'])) {
-            $subfolder = 'videos/';
-        } elseif (in_array($file_ext, ['mp3', 'wav', 'ogg'])) {
-            $subfolder = 'audios/';
+        // Allowed file types
+        $allowed_video = ['mp4', 'avi', 'mov', 'webm'];
+        $allowed_audio = ['mp3', 'wav', 'ogg'];
+        $allowed_docs = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt'];
+        
+        // Validate file size
+        if ($file_size > $max_size) {
+            $message = '<div class="alert alert-danger">File size exceeds 50MB limit.</div>';
         } else {
-            $subfolder = 'documents/';
-        }
-        
-        $target_path = $upload_dir . $subfolder . $new_filename;
-        
-        if (move_uploaded_file($_FILES['file']['tmp_name'], $target_path)) {
-            $file_path = '/assets/uploads/' . $subfolder . $new_filename;
+            // Determine subfolder based on type and validate
+            $subfolder = '';
+            $is_valid = false;
+            
+            if (in_array($file_ext, $allowed_video)) {
+                $subfolder = 'videos/';
+                $is_valid = true;
+            } elseif (in_array($file_ext, $allowed_audio)) {
+                $subfolder = 'audios/';
+                $is_valid = true;
+            } elseif (in_array($file_ext, $allowed_docs)) {
+                $subfolder = 'documents/';
+                $is_valid = true;
+            }
+            
+            if (!$is_valid) {
+                $message = '<div class="alert alert-danger">Invalid file type. Allowed: videos, audio, PDF, Word, PowerPoint.</div>';
+            } else {
+                $new_filename = uniqid() . '_' . time() . '.' . $file_ext;
+                $target_path = $upload_dir . $subfolder . $new_filename;
+                
+                if (move_uploaded_file($_FILES['file']['tmp_name'], $target_path)) {
+                    $file_path = '/assets/uploads/' . $subfolder . $new_filename;
+                } else {
+                    $message = '<div class="alert alert-danger">Failed to upload file.</div>';
+                }
+            }
         }
     }
     
-    $stmt = $conn->prepare("INSERT INTO learning_materials (subject_id, title, description, material_type, file_path, content, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("isssssi", $subject_id, $title, $description, $material_type, $file_path, $content, $_SESSION['user_id']);
-    
-    if ($stmt->execute()) {
-        $message = '<div class="alert alert-success">Material uploaded successfully!</div>';
-        logActivity($_SESSION['user_id'], 'upload_material', "Uploaded material: $title");
-    } else {
-        $message = '<div class="alert alert-danger">Error uploading material.</div>';
+    if (!isset($message) || empty($message)) {
+        $stmt = $conn->prepare("INSERT INTO learning_materials (subject_id, title, description, material_type, file_path, content, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("isssssi", $subject_id, $title, $description, $material_type, $file_path, $content, $_SESSION['user_id']);
+        
+        if ($stmt->execute()) {
+            $message = '<div class="alert alert-success">Material uploaded successfully!</div>';
+            logActivity($_SESSION['user_id'], 'upload_material', "Uploaded material: $title");
+        } else {
+            $message = '<div class="alert alert-danger">Error uploading material.</div>';
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
 
 // Handle delete

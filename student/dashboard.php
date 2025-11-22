@@ -24,6 +24,7 @@ $stmt->close();
 $upcoming_classes = [];
 if (!empty($subscriptions)) {
     $subject_ids = array_column($subscriptions, 'subject_id');
+    // Safe: Each ID is explicitly cast to integer to prevent SQL injection
     $ids_string = implode(',', array_map('intval', $subject_ids));
     
     $result = $conn->query("SELECT lc.*, s.subject_name, u.full_name as teacher_name
@@ -43,6 +44,7 @@ if (!empty($subscriptions)) {
 $total_materials = 0;
 if (!empty($subscriptions)) {
     $subject_ids = array_column($subscriptions, 'subject_id');
+    // Safe: Each ID is explicitly cast to integer to prevent SQL injection
     $ids_string = implode(',', array_map('intval', $subject_ids));
     
     $result = $conn->query("SELECT COUNT(*) as count FROM learning_materials WHERE subject_id IN ($ids_string) AND status = 'active'");

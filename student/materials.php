@@ -22,12 +22,13 @@ $stmt->close();
 $materials = [];
 if (!empty($subscribed_subjects)) {
     $subject_ids = array_column($subscribed_subjects, 'subject_id');
+    // Safe: Each ID is explicitly cast to integer to prevent SQL injection
     $ids_string = implode(',', array_map('intval', $subject_ids));
     
     // Filter by subject if provided
     $filter = '';
     if (isset($_GET['subject_id']) && !empty($_GET['subject_id'])) {
-        $subject_id = intval($_GET['subject_id']);
+        $subject_id = intval($_GET['subject_id']); // Safe: explicitly cast to integer
         $filter = " AND lm.subject_id = $subject_id";
     }
     
