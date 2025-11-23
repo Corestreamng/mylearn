@@ -86,6 +86,8 @@ Open your browser and navigate to `http://localhost/mylearn`
 - Email: `admin@mylearn.com`
 - Password: `admin123`
 
+**Note:** If the default login doesn't work, run `reset_admin_password.php` (upload it to your server, access via browser, then delete it). See INSTALL.md for details.
+
 ## Usage
 
 ### For Admins:

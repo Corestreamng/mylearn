@@ -91,5 +91,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 );
 
 -- Insert default admin user (password: admin123)
+-- Note: If you get duplicate entry error, the admin already exists. Skip this or delete and re-run.
 INSERT INTO users (email, password, full_name, user_type) 
-VALUES ('admin@mylearn.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'System Admin', 'admin');
+VALUES ('admin@mylearn.com', '$2y$10$XcbJ/p4qPFijy./isgOkDOmq2liNzfZ4Eyn6TqCieRlaE5ciPmCkK', 'System Admin', 'admin')
+ON DUPLICATE KEY UPDATE password = '$2y$10$XcbJ/p4qPFijy./isgOkDOmq2liNzfZ4Eyn6TqCieRlaE5ciPmCkK';

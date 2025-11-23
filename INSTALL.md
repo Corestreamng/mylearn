@@ -131,6 +131,8 @@ server {
    - Email: `admin@mylearn.com`
    - Password: `admin123`
 
+**Note:** If the default credentials don't work, you may have imported an older version of the database. Use the `reset_admin_password.php` utility to fix this (see troubleshooting section below).
+
 ### 7. First Steps After Installation
 
 1. **Change Admin Password**: Login as admin and update the password
@@ -139,6 +141,28 @@ server {
 4. **Assign Teachers**: Edit subjects and assign teachers to them
 
 ## Common Issues and Solutions
+
+### Admin Login Not Working
+
+**Error**: "Invalid email or password" when using admin@mylearn.com / admin123
+
+**Cause**: You may have imported an older version of the database with an incorrect password hash.
+
+**Solution**:
+1. Upload `reset_admin_password.php` to your server root
+2. Access it via browser: `http://yourdomain.com/reset_admin_password.php`
+3. The script will reset the admin password to "admin123"
+4. **Delete the file immediately** after use for security
+5. Login with: admin@mylearn.com / admin123
+
+Alternatively, re-import the database:
+```bash
+# Drop and recreate database
+mysql -u root -p -e "DROP DATABASE IF EXISTS mylearn_lms; CREATE DATABASE mylearn_lms;"
+
+# Import fresh schema
+mysql -u root -p mylearn_lms < config/init_db.sql
+```
 
 ### Database Connection Error
 

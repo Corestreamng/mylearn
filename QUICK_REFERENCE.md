@@ -7,6 +7,8 @@
 - Password: `admin123`
 - **⚠️ Change immediately after first login**
 
+**If default login doesn't work:** Use `reset_admin_password.php` (see Troubleshooting section)
+
 ## Quick Start (5 Minutes)
 
 ### Step 1: Setup Database
@@ -117,7 +119,15 @@ Visit: `http://yourdomain.com/index.php`
 
 ## Troubleshooting
 
-### Can't Login?
+### Can't Login with Admin Credentials?
+**Error:** "Invalid email or password"
+**Solution:**
+1. Upload `reset_admin_password.php` to server root
+2. Access via browser
+3. Delete file after use
+4. Login with admin@mylearn.com / admin123
+
+### Can't Login? (Other Issues)
 - Check credentials
 - Verify account status
 - Clear browser cookies
