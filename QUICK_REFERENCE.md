@@ -132,6 +132,15 @@ Visit: `http://yourdomain.com/index.php`
 - Check MySQL is running: `service mysql status`
 - Ensure database exists
 
+### Blank Page / mysqli Error (cPanel)?
+**Error:** "Class 'mysqli' not found"
+**Solution:**
+1. Login to cPanel
+2. Go to "Select PHP Version" or "MultiPHP Manager"
+3. Enable "mysqli" extension
+4. Save and restart
+5. See INSTALL.md for detailed steps
+
 ### Page Not Found?
 - Check `.htaccess` exists
 - Verify Apache mod_rewrite enabled

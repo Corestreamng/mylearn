@@ -161,18 +161,54 @@ sudo chmod -R 755 assets/uploads/
 
 ### PHP Extension Missing
 
-**Error**: "Call to undefined function mysqli_connect()"
+**Error**: "Call to undefined function mysqli_connect()" or "Class 'mysqli' not found"
 
 **Solution**:
+
+**For Ubuntu/Debian:**
 ```bash
-# Ubuntu/Debian
 sudo apt-get install php-mysqli
 sudo service apache2 restart
+```
 
-# CentOS/RHEL
+**For CentOS/RHEL:**
+```bash
 sudo yum install php-mysqli
 sudo systemctl restart httpd
 ```
+
+**For cPanel/Shared Hosting:**
+
+If you see the error "Class 'mysqli' not found", the mysqli extension is not enabled on your hosting account. Here's how to fix it:
+
+1. **Using MultiPHP Manager (cPanel):**
+   - Login to your cPanel
+   - Navigate to "Software" section
+   - Click on "MultiPHP Manager" or "Select PHP Version"
+   - Select your domain
+   - Click on "PHP Extensions" or "Extensions"
+   - Find and enable "mysqli" extension
+   - Click "Save"
+   - Restart your website (some hosts do this automatically)
+
+2. **Using PHP Selector (CloudLinux):**
+   - Login to your cPanel
+   - Find "Select PHP Version" under Software section
+   - Click on "Extensions" tab
+   - Check the box next to "mysqli"
+   - Click "Save"
+
+3. **Contact Hosting Support:**
+   - If you don't have access to PHP extension settings, contact your hosting provider
+   - Ask them to enable the "mysqli" extension for your account
+   - Most hosting providers can do this within minutes
+
+4. **Verify Installation:**
+   After enabling mysqli, create a file called `phpinfo.php` in your root directory:
+   ```php
+   <?php phpinfo(); ?>
+   ```
+   Access it via your browser (e.g., `http://yourdomain.com/phpinfo.php`) and search for "mysqli". You should see it listed as enabled. **Delete this file after verification for security.**
 
 ### Session Issues
 

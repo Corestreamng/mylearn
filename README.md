@@ -42,6 +42,7 @@ A comprehensive LMS where admins create subjects, assign teachers, and track all
 - PHP 7.4 or higher
 - MySQL 5.7 or higher
 - Apache/Nginx web server
+- PHP mysqli extension enabled
 
 ### Setup Steps
 
@@ -51,12 +52,18 @@ git clone https://github.com/Corestreamng/mylearn.git
 cd mylearn
 ```
 
-2. Create the database:
+2. **Check System Requirements (Recommended for cPanel/Shared Hosting):**
+   - Upload `system_check.php` to your server
+   - Access it via browser: `http://yourdomain.com/system_check.php`
+   - Follow the instructions to fix any issues
+   - **Delete the file after checking for security**
+
+3. Create the database:
 ```bash
 mysql -u root -p < config/init_db.sql
 ```
 
-3. Configure database connection:
+4. Configure database connection:
 Edit `config/database.php` with your database credentials:
 ```php
 define('DB_HOST', 'localhost');
@@ -65,12 +72,12 @@ define('DB_PASS', 'your_password');
 define('DB_NAME', 'mylearn_lms');
 ```
 
-4. Set up file permissions:
+5. Set up file permissions:
 ```bash
 chmod -R 755 assets/uploads/
 ```
 
-5. Access the application:
+6. Access the application:
 Open your browser and navigate to `http://localhost/mylearn`
 
 ## Default Login Credentials
