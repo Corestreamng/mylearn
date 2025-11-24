@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS subjects (
     subject_id INT PRIMARY KEY AUTO_INCREMENT,
     subject_name VARCHAR(255) NOT NULL,
     description TEXT,
+    price_per_month DECIMAL(10, 2) DEFAULT 0.00 COMMENT 'Price in Naira per month',
     teacher_id INT NULL,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

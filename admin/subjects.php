@@ -11,10 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($_POST['action'] === 'add') {
             $subject_name = sanitizeInput($_POST['subject_name']);
             $description = sanitizeInput($_POST['description']);
+            $price_per_month = floatval($_POST['price_per_month']);
             $teacher_id = !empty($_POST['teacher_id']) ? intval($_POST['teacher_id']) : null;
             
-            $stmt = $conn->prepare("INSERT INTO subjects (subject_name, description, teacher_id, created_by) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssii", $subject_name, $description, $teacher_id, $_SESSION['user_id']);
+            $stmt = $conn->prepare("INSERT INTO subjects (subject_name, description, price_per_month, teacher_id, created_by) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssdii", $subject_name, $description, $price_per_month, $teacher_id, $_SESSION['user_id']);
             
             if ($stmt->execute()) {
                 $message = '<div class="alert alert-success">Subject added successfully!</div>';
@@ -27,11 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $subject_id = intval($_POST['subject_id']);
             $subject_name = sanitizeInput($_POST['subject_name']);
             $description = sanitizeInput($_POST['description']);
+            $price_per_month = floatval($_POST['price_per_month']);
             $teacher_id = !empty($_POST['teacher_id']) ? intval($_POST['teacher_id']) : null;
             $status = sanitizeInput($_POST['status']);
             
-            $stmt = $conn->prepare("UPDATE subjects SET subject_name = ?, description = ?, teacher_id = ?, status = ? WHERE subject_id = ?");
-            $stmt->bind_param("ssisi", $subject_name, $description, $teacher_id, $status, $subject_id);
+            $stmt = $conn->prepare("UPDATE subjects SET subject_name = ?, description = ?, price_per_month = ?, teacher_id = ?, status = ? WHERE subject_id = ?");
+            $stmt->bind_param("ssdisi", $subject_name, $description, $price_per_month, $teacher_id, $status, $subject_id);
             
             if ($stmt->execute()) {
                 $message = '<div class="alert alert-success">Subject updated successfully!</div>';
@@ -161,6 +163,7 @@ $conn->close();
                                         <th>ID</th>
                                         <th>Subject Name</th>
                                         <th>Description</th>
+                                        <th>Price/Month (₦)</th>
                                         <th>Teacher</th>
                                         <th>Status</th>
                                         <th>Created</th>
@@ -173,6 +176,7 @@ $conn->close();
                                         <td><?php echo $subject['subject_id']; ?></td>
                                         <td><?php echo htmlspecialchars($subject['subject_name']); ?></td>
                                         <td><?php echo htmlspecialchars(substr($subject['description'], 0, 50)) . '...'; ?></td>
+                                        <td><strong>₦<?php echo number_format($subject['price_per_month'] ?? 0, 2); ?></strong></td>
                                         <td><?php echo $subject['teacher_name'] ? htmlspecialchars($subject['teacher_name']) : 'Unassigned'; ?></td>
                                         <td>
                                             <span class="badge bg-<?php echo $subject['status'] === 'active' ? 'success' : 'secondary'; ?>">
@@ -196,7 +200,7 @@ $conn->close();
                                     <?php endforeach; ?>
                                     <?php if (empty($subjects)): ?>
                                     <tr>
-                                        <td colspan="7" class="text-center">No subjects found</td>
+                                        <td colspan="8" class="text-center">No subjects found</td>
                                     </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -226,6 +230,11 @@ $conn->close();
                         <div class="mb-3">
                             <label class="form-label">Description</label>
                             <textarea class="form-control" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price per Month (₦)</label>
+                            <input type="number" class="form-control" name="price_per_month" step="0.01" min="0" value="0" required>
+                            <small class="text-muted">Enter the monthly subscription price in Naira</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Assign Teacher (Optional)</label>
@@ -269,6 +278,11 @@ $conn->close();
                             <textarea class="form-control" name="description" id="edit_description" rows="3" required></textarea>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Price per Month (₦)</label>
+                            <input type="number" class="form-control" name="price_per_month" id="edit_price_per_month" step="0.01" min="0" required>
+                            <small class="text-muted">Enter the monthly subscription price in Naira</small>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Assign Teacher</label>
                             <select class="form-select" name="teacher_id" id="edit_teacher_id">
                                 <option value="">Select Teacher</option>
@@ -302,6 +316,7 @@ $conn->close();
             document.getElementById('edit_subject_id').value = subject.subject_id;
             document.getElementById('edit_subject_name').value = subject.subject_name;
             document.getElementById('edit_description').value = subject.description;
+            document.getElementById('edit_price_per_month').value = subject.price_per_month || 0;
             document.getElementById('edit_teacher_id').value = subject.teacher_id || '';
             document.getElementById('edit_status').value = subject.status;
             
