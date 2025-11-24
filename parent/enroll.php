@@ -5,28 +5,6 @@ requireRole('parent');
 $conn = getDBConnection();
 $message = '';
 
-// Handle enrollment
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $student_id = intval($_POST['student_id']);
-    $subject_id = intval($_POST['subject_id']);
-    $duration_months = intval($_POST['duration_months']);
-    $amount = floatval($_POST['amount']);
-    
-    $start_date = date('Y-m-d');
-    $end_date = date('Y-m-d', strtotime("+$duration_months months"));
-    
-    $stmt = $conn->prepare("INSERT INTO subscriptions (student_id, parent_id, subject_id, start_date, end_date, duration_months, amount, payment_status, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', 'active')");
-    $stmt->bind_param("iiissid", $student_id, $_SESSION['user_id'], $subject_id, $start_date, $end_date, $duration_months, $amount);
-    
-    if ($stmt->execute()) {
-        $message = '<div class="alert alert-success">Child enrolled successfully!</div>';
-        logActivity($_SESSION['user_id'], 'enroll_child', "Enrolled child in subject ID: $subject_id");
-    } else {
-        $message = '<div class="alert alert-danger">Error enrolling child.</div>';
-    }
-    $stmt->close();
-}
-
 // Get parent's children
 $children = [];
 $stmt = $conn->prepare("SELECT * FROM users WHERE parent_id = ? AND user_type = 'student' AND status = 'active'");
@@ -49,6 +27,13 @@ while ($row = $result->fetch_assoc()) {
 
 // Pre-select student if provided
 $selected_student = isset($_GET['student_id']) ? intval($_GET['student_id']) : 0;
+
+// Get parent's email for Paystack
+$stmt = $conn->prepare("SELECT email FROM users WHERE user_id = ?");
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$parent_email = $stmt->get_result()->fetch_assoc()['email'];
+$stmt->close();
 
 $conn->close();
 ?>
@@ -134,7 +119,8 @@ $conn->close();
                                                     <?php if ($subject['teacher_name']): ?>
                                                     <p><small><strong>Teacher:</strong> <?php echo htmlspecialchars($subject['teacher_name']); ?></small></p>
                                                     <?php endif; ?>
-                                                    <button class="btn btn-primary btn-sm" onclick="enrollChild(<?php echo $subject['subject_id']; ?>, '<?php echo htmlspecialchars($subject['subject_name']); ?>')">
+                                                    <p class="text-primary"><strong>₦<?php echo number_format($subject['price_per_month'] ?? 0, 2); ?>/month</strong></p>
+                                                    <button class="btn btn-primary btn-sm" onclick="enrollChild(<?php echo $subject['subject_id']; ?>, '<?php echo htmlspecialchars($subject['subject_name'], ENT_QUOTES); ?>', <?php echo $subject['price_per_month'] ?? 0; ?>)">
                                                         <i class="bi bi-plus-circle"></i> Enroll Child
                                                     </button>
                                                 </div>
@@ -158,15 +144,16 @@ $conn->close();
                                     <h5>Enrollment Details</h5>
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST">
-                                        <input type="hidden" name="subject_id" id="enroll_subject_id">
+                                    <form id="enrollmentForm" onsubmit="return false;">
+                                        <input type="hidden" id="enroll_subject_id">
+                                        <input type="hidden" id="enroll_price_per_month">
                                         <div class="mb-3">
                                             <label class="form-label">Subject</label>
                                             <input type="text" class="form-control" id="enroll_subject_name" readonly>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Select Child</label>
-                                            <select class="form-select" name="student_id" required>
+                                            <select class="form-select" id="student_id" required>
                                                 <option value="">Choose...</option>
                                                 <?php foreach ($children as $child): ?>
                                                 <option value="<?php echo $child['user_id']; ?>" <?php echo $selected_student === $child['user_id'] ? 'selected' : ''; ?>>
@@ -177,23 +164,26 @@ $conn->close();
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Duration</label>
-                                            <select class="form-select" name="duration_months" id="duration_months" onchange="calculateAmount()" required>
-                                                <option value="1">1 Month - $50</option>
-                                                <option value="2">2 Months - $90</option>
-                                                <option value="3">3 Months - $120</option>
-                                                <option value="6">6 Months - $220</option>
+                                            <select class="form-select" id="duration_months" onchange="calculateAmount()" required>
+                                                <option value="1">1 Month</option>
+                                                <option value="2">2 Months</option>
+                                                <option value="3">3 Months</option>
+                                                <option value="6">6 Months</option>
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Amount</label>
-                                            <input type="text" class="form-control" id="amount_display" value="$50.00" readonly>
-                                            <input type="hidden" name="amount" id="amount" value="50">
+                                            <label class="form-label">Total Amount</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">₦</span>
+                                                <input type="text" class="form-control" id="amount_display" value="0.00" readonly>
+                                            </div>
+                                            <input type="hidden" id="amount" value="0">
                                         </div>
                                         <div class="alert alert-info">
-                                            <small><i class="bi bi-info-circle"></i> Payment will be processed and subscription activated immediately.</small>
+                                            <small><i class="bi bi-shield-check"></i> Secure payment powered by Paystack</small>
                                         </div>
-                                        <button type="submit" class="btn btn-success w-100">
-                                            <i class="bi bi-credit-card"></i> Pay & Enroll
+                                        <button type="button" onclick="payWithPaystack()" class="btn btn-success w-100">
+                                            <i class="bi bi-credit-card"></i> Pay ₦<span id="pay_amount">0.00</span> Now
                                         </button>
                                     </form>
                                 </div>
@@ -206,27 +196,97 @@ $conn->close();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <script>
-        function enrollChild(subjectId, subjectName) {
+        let pricePerMonth = 0;
+        
+        function enrollChild(subjectId, subjectName, price) {
+            pricePerMonth = price;
             document.getElementById('enroll_subject_id').value = subjectId;
             document.getElementById('enroll_subject_name').value = subjectName;
+            document.getElementById('enroll_price_per_month').value = price;
             document.getElementById('enrollment-form').style.display = 'block';
             document.getElementById('enrollment-form').scrollIntoView({behavior: 'smooth'});
+            calculateAmount();
         }
 
         function calculateAmount() {
             const duration = parseInt(document.getElementById('duration_months').value);
-            let amount = 0;
-            
-            switch(duration) {
-                case 1: amount = 50; break;
-                case 2: amount = 90; break;
-                case 3: amount = 120; break;
-                case 6: amount = 220; break;
-            }
+            const amount = pricePerMonth * duration;
             
             document.getElementById('amount').value = amount;
-            document.getElementById('amount_display').value = '$' + amount.toFixed(2);
+            document.getElementById('amount_display').value = amount.toFixed(2);
+            document.getElementById('pay_amount').textContent = amount.toFixed(2);
+        }
+
+        function payWithPaystack() {
+            const studentId = document.getElementById('student_id').value;
+            const subjectId = document.getElementById('enroll_subject_id').value;
+            const duration = document.getElementById('duration_months').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            
+            if (!studentId) {
+                alert('Please select a child');
+                return;
+            }
+            
+            if (amount <= 0) {
+                alert('Invalid amount');
+                return;
+            }
+            
+            const handler = PaystackPop.setup({
+                key: 'pk_test_6c7ec60c77a8c2db9e05b4a1e53be66ea4513ec2', // Replace with your public key
+                email: '<?php echo $parent_email; ?>',
+                amount: amount * 100, // Amount in kobo
+                currency: 'NGN',
+                ref: 'MLN_' + Math.floor((Math.random() * 1000000000) + 1),
+                metadata: {
+                    custom_fields: [
+                        {
+                            display_name: "Student ID",
+                            variable_name: "student_id",
+                            value: studentId
+                        },
+                        {
+                            display_name: "Subject ID",
+                            variable_name: "subject_id",
+                            value: subjectId
+                        },
+                        {
+                            display_name: "Duration (Months)",
+                            variable_name: "duration_months",
+                            value: duration
+                        }
+                    ]
+                },
+                callback: function(response) {
+                    // Verify payment
+                    fetch('/parent/verify_payment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'reference=' + response.reference
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Payment successful! Child enrolled successfully.');
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        alert('An error occurred. Please contact support with reference: ' + response.reference);
+                    });
+                },
+                onClose: function() {
+                    alert('Transaction was cancelled');
+                }
+            });
+            handler.openIframe();
         }
     </script>
 </body>

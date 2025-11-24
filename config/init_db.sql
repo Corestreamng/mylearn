@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     duration_months INT NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
     payment_status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
+    payment_reference VARCHAR(255) NULL,
     payment_date DATETIME,
     status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
