@@ -56,10 +56,18 @@ $conn->close();
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
+    <!-- Mobile Navigation Toggle -->
+    <button class="mobile-nav-toggle d-md-none" type="button" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-2 d-md-block sidebar">
+            <nav class="col-md-2 d-md-block sidebar" id="sidebar">
                 <div class="position-sticky pt-3">
                     <div class="text-center mb-4">
                         <h4 class="text-white">MyLearn</h4>
@@ -77,6 +85,11 @@ $conn->close();
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="/parent/progress.php">
+                                <i class="bi bi-graph-up"></i> Learning Progress
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/parent/enroll.php">
                                 <i class="bi bi-plus-circle"></i> Enroll Child
                             </a>
@@ -84,6 +97,11 @@ $conn->close();
                         <li class="nav-item">
                             <a class="nav-link" href="/parent/subscriptions.php">
                                 <i class="bi bi-credit-card"></i> Subscriptions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/parent/notifications.php">
+                                <i class="bi bi-bell"></i> Notifications
                             </a>
                         </li>
                         <li class="nav-item mt-3">
@@ -217,5 +235,32 @@ $conn->close();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile Sidebar Toggle
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('show')) {
+                icon.classList.remove('bi-list');
+                icon.classList.add('bi-x');
+            } else {
+                icon.classList.remove('bi-x');
+                icon.classList.add('bi-list');
+            }
+        });
+        
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+            const icon = sidebarToggle.querySelector('i');
+            icon.classList.remove('bi-x');
+            icon.classList.add('bi-list');
+        });
+    </script>
 </body>
 </html>

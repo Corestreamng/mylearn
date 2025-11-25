@@ -64,10 +64,18 @@ $conn->close();
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
+    <!-- Mobile Navigation Toggle -->
+    <button class="mobile-nav-toggle d-md-none" type="button" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-2 d-md-block sidebar">
+            <nav class="col-md-2 d-md-block sidebar" id="sidebar">
                 <div class="position-sticky pt-3">
                     <div class="text-center mb-4">
                         <h4 class="text-white">MyLearn</h4>
@@ -258,5 +266,6 @@ $conn->close();
             modal.show();
         }
     </script>
+    <script src="/assets/js/mobile-nav.js"></script>
 </body>
 </html>

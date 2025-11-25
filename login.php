@@ -43,6 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['full_name'] = $user['full_name'];
             $_SESSION['user_type'] = $user['user_type'];
             
+            // Update last_login timestamp
+            $update_stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE user_id = ?");
+            $update_stmt->bind_param("i", $user['user_id']);
+            $update_stmt->execute();
+            $update_stmt->close();
+            
             logActivity($user['user_id'], 'login', 'User logged in');
             
             // Redirect based on user type
