@@ -1,0 +1,21 @@
+# Uploads
+assets/uploads/videos/*
+assets/uploads/audios/*
+assets/uploads/documents/*
+!assets/uploads/videos/.gitkeep
+!assets/uploads/audios/.gitkeep
+!assets/uploads/documents/.gitkeep
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temp files
+*.tmp
+*.log
