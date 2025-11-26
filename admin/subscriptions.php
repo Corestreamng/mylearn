@@ -56,8 +56,23 @@ $conn->close();
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="/admin/users.php">
+                                <i class="bi bi-people-fill"></i> All Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/admin/subjects.php">
                                 <i class="bi bi-book"></i> Subjects
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/materials.php">
+                                <i class="bi bi-file-earmark-text"></i> Materials
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/live_classes.php">
+                                <i class="bi bi-camera-video"></i> Live Classes
                             </a>
                         </li>
                         <li class="nav-item">
@@ -67,7 +82,7 @@ $conn->close();
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/admin/students.php">
-                                <i class="bi bi-people"></i> Students
+                                <i class="bi bi-mortarboard"></i> Students
                             </a>
                         </li>
                         <li class="nav-item">
